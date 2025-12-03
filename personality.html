@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiftzen Health | CNA Big 5 Personality Assessment (OCEAN)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons for aesthetic components -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .score-bar { transition: width 0.5s ease-in-out; }
+        /* Style for required star on labels */
+        .required::after { content: "*"; color: #ef4444; margin-left: 0.25rem; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+    <!-- Directory Header -->
+    <header class="bg-white shadow mb-8">
+        <div class="container mx-auto flex items-center justify-between py-4 px-6">
+            <a href="index.html" class="flex items-center">
+                <img src="assets/img/logo/shiftzen.png" alt="Shiftzen Logo" class="h-10 w-auto mr-3">
+                
+            </a>
+            <nav>
+                <ul class="flex space-x-6 text-blue-700 font-semibold">
+                    <li><a href="index.html" class="hover:text-blue-900">Home</a></li>
+                    <li><a href="about.html" class="hover:text-blue-900">About</a></li>
+                    <li class="relative group">
+                        <a href="services.html" class="hover:text-blue-900">Services</a>
+                        <ul class="absolute left-0 mt-2 w-40 bg-white border rounded shadow-lg hidden group-hover:block z-10">
+                            <li><a href="professionals.html" class="block px-4 py-2 hover:bg-blue-50">Professionals</a></li>
+                            <li><a href="facilities.html" class="block px-4 py-2 hover:bg-blue-50">Facilities</a></li>
+                            <li><a href="agencies.html" class="block px-4 py-2 hover:bg-blue-50">Agencies</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="Resources.html" class="hover:text-blue-900">Resources</a></li>
+                    <li><a href="contact.html" class="hover:text-blue-900">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div id="app" class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10">
+
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-800 tracking-tight">
+                CNA Personality Fit Assessment
+            </h1>
+            <p class="mt-2 text-lg text-gray-600">
+                Rate your agreement with the following statements (1 = Strongly Disagree, 5 = Strongly Agree).
+            </p>
+            <div id="status-message" class="mt-4 text-sm font-medium text-red-600 hidden"></div>
+        </header>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container">
+            <form id="big5-form">
+                <!-- Questions will be dynamically inserted here -->
+            </form>
+
+            <div class="mt-10 pt-6 border-t border-gray-200 flex justify-center">
+                <button id="submit-button"
+                    class="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                    View My Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Container (Hidden by default) -->
+        <div id="results-container" class="hidden mt-10 p-6 border-t-2 border-blue-500">
+            <h2 class="text-3xl font-bold text-center text-blue-700 mb-6">Your Big 5 Profile</h2>
+            <div class="space-y-6">
+                <!-- Scores will be dynamically inserted here -->
+            </div>
+            <div id="save-status" class="mt-8 text-center text-sm font-medium text-gray-600"></div>
+
+            <div class="mt-10 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Data Routing Summary</h3>
+                <p class="text-sm text-gray-500">
+                    Your assessment scores were successfully stored in **Google Firestore** under the collection:
+                </p>
+                <code class="block mt-1 p-2 bg-white text-xs rounded border border-dashed text-gray-800">
+                    /artifacts/{__app_id}/public/data/cna_quizzes
+                </code>
+                <p class="mt-2 text-sm text-gray-500">
+                    This allows for secure, persistent storage and real-time data aggregation for your organization.
+                    (User ID: <span id="user-id" class="font-mono text-xs text-blue-500">Loading...</span>)
+                </p>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button id="fetch-data-button"
+                    class="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-300">
+                    Fetch All Results (Console Log)
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white text-blue-800 mt-16">
+        <div class="container mx-auto py-10 px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0 flex items-center">
+                    <a href="index.html"><img src="assets/img/logo/shiftzen.png" alt="Shiftzen Logo" class="h-10 w-auto mr-3"></a>
+                    
+                </div>
+                <nav>
+                    <ul class="flex space-x-6 font-semibold">
+                        <li><a href="index.html" class="hover:text-blue-900">Home</a></li>
+                        <li><a href="about.html" class="hover:text-blue-900">About</a></li>
+                        <li class="relative group">
+                            <a href="services.html" class="hover:text-blue-900">Services</a>
+                            <ul class="absolute left-0 mt-2 w-40 bg-white border rounded shadow-lg hidden group-hover:block z-10 text-blue-900">
+                                <li><a href="professionals.html" class="block px-4 py-2 hover:bg-blue-50">Professionals</a></li>
+                                <li><a href="facilities.html" class="block px-4 py-2 hover:bg-blue-50">Facilities</a></li>
+                                <li><a href="agencies.html" class="block px-4 py-2 hover:bg-blue-50">Agencies</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="Resources.html" class="hover:text-blue-900">Resources</a></li>
+                        <li><a href="contact.html" class="hover:text-blue-900">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="footer-social mt-6 md:mt-0 flex space-x-4">
+                    <a href="#" class="hover:text-blue-900"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://bit.ly/sai4ull" class="hover:text-blue-900"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-sm text-blue-600">
+                <p>&copy; <script>document.write(new Date().getFullYear());</script> Shiftzen Health. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="https://kit.fontawesome.com/d781f46eb3.js" crossorigin="anonymous"></script>
+
+    <script type="module">
+        // Import Firebase components
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, Timestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-cna-quiz-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        // Configuration for the Big 5 Quiz
+        // The last letter of the 'id' determines the factor (O, C, E, A, N)
+        // 'reverse' indicates a reversed score item (1=5, 5=1)
+        const quizItems = [
+            // Extraversion (E)
+            { id: 'item1E', text: 'I am the first to introduce myself to a new patient or colleague.', factor: 'E', reverse: false },
+            { id: 'item2E', text: 'I feel comfortable leading group activities for residents.', factor: 'E', reverse: false },
+            { id: 'item3E', text: 'I often keep quiet during team meetings.', factor: 'E', reverse: true },
+
+            // Agreeableness (A)
+            { id: 'item4A', text: 'I try to understand others\' feelings, even when they are upset.', factor: 'A', reverse: false },
+            { id: 'item5A', text: 'I can be critical of others\' performance on the job.', factor: 'A', reverse: true },
+            { id: 'item6A', text: 'I am always patient, even when a resident is uncooperative.', factor: 'A', reverse: false },
+
+            // Conscientiousness (C)
+            { id: 'item7C', text: 'I always double-check documentation and charting before the end of my shift.', factor: 'C', reverse: false },
+            { id: 'item8C', text: 'I sometimes neglect my duties if the shift is stressful.', factor: 'C', reverse: true },
+            { id: 'item9C', text: 'I plan my tasks carefully to ensure I complete all patient care routines.', factor: 'C', reverse: false },
+
+            // Neuroticism / Emotional Stability (N)
+            { id: 'item10N', text: 'I get easily overwhelmed when things get busy or chaotic.', factor: 'N', reverse: true },
+            { id: 'item11N', text: 'I worry about making mistakes even after I have finished a task.', factor: 'N', reverse: true },
+            { id: 'item12N', text: 'I remain calm and stable during unexpected medical emergencies.', factor: 'N', reverse: false }, // Inverse-coded item
+
+            // Openness (O)
+            { id: 'item13O', text: 'I enjoy learning new care methods or specialized equipment.', factor: 'O', reverse: false },
+            { id: 'item14O', text: 'I prefer to stick to standard procedures rather than trying new approaches.', factor: 'O', reverse: true },
+            { id: 'item15O', text: 'I often look for ways to improve the workflow on my unit.', factor: 'O', reverse: false },
+        ];
+
+        // --- Firebase Initialization and Auth ---
+
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                console.error("Firebase configuration is missing.");
+                document.getElementById('status-message').textContent = "Error: Firebase configuration not found. Cannot save data.";
+                document.getElementById('status-message').classList.remove('hidden');
+                return;
+            }
+            try {
+                // setLogLevel('Debug'); // Enable for debugging
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Sign in logic
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        document.getElementById('user-id').textContent = userId;
+                        console.log("Firebase Auth Ready. User ID:", userId);
+                    } else {
+                        // User is signed out or anonymous.
+                        userId = crypto.randomUUID(); // Fallback for userId if needed
+                        isAuthReady = true;
+                        document.getElementById('user-id').textContent = 'Anonymous (' + userId.substring(0, 8) + '...)';
+                        console.log("Firebase Auth Ready. Signed out/Anonymous.");
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                document.getElementById('status-message').textContent = `Firebase Init Error: ${error.message}`;
+                document.getElementById('status-message').classList.remove('hidden');
+            }
+        }
+
+        // --- Quiz Rendering and Logic ---
+
+        function renderQuiz() {
+            const form = document.getElementById('big5-form');
+            form.innerHTML = ''; // Clear previous content
+
+            quizItems.forEach((item, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'p-5 bg-gray-50 rounded-lg shadow-sm mb-4 border border-gray-200';
+                questionDiv.innerHTML = `
+                    <p class="text-base font-semibold text-gray-800 mb-3 required">${index + 1}. ${item.text}</p>
+                    <div class="flex flex-wrap justify-between space-x-2 text-sm">
+                        <span class="text-red-500 font-medium">Strongly Disagree (1)</span>
+                        <span class="text-green-500 font-medium">Strongly Agree (5)</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 p-2 bg-white rounded-lg border border-gray-300">
+                        ${[1, 2, 3, 4, 5].map(value => `
+                            <label class="flex-1 text-center cursor-pointer p-1">
+                                <input type="radio" name="${item.id}" value="${value}" class="peer hidden" required>
+                                <span class="block w-full py-2 px-1 text-gray-700 font-medium rounded-md transition-all duration-150
+                                    peer-checked:bg-blue-500 peer-checked:text-white peer-checked:shadow-md
+                                    hover:bg-blue-100 hover:text-blue-700">
+                                    ${value}
+                                </span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                form.appendChild(questionDiv);
+            });
+        }
+
+        function calculateScores(formData) {
+            const scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+            const factorCounts = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+
+            quizItems.forEach(item => {
+                const factor = item.factor;
+                const value = parseInt(formData.get(item.id));
+                let scoreValue = value;
+
+                // Handle reverse-coded items (1=5, 2=4, 3=3, 4=2, 5=1)
+                if (item.reverse) {
+                    scoreValue = 6 - value;
+                }
+
+                if (!isNaN(scoreValue)) {
+                    scores[factor] += scoreValue;
+                    factorCounts[factor]++;
+                }
+            });
+
+            const results = {};
+            for (const factor in scores) {
+                // Normalize score to a 0-100 scale based on 3 items (min score 3, max score 15)
+                const rawScore = scores[factor]; // Raw score is 3-15
+                const minRaw = 3;
+                const maxRaw = 15;
+                // Calculate percentage: ((Raw Score - Min Raw) / (Max Raw - Min Raw)) * 100
+                const normalizedScore = Math.round(((rawScore - minRaw) / (maxRaw - minRaw)) * 100);
+
+                results[factor] = normalizedScore;
+            }
+            return results;
+        }
+
+        function getFactorDescription(factor, score) {
+            const descriptions = {
+                'O': {
+                    name: 'Openness to Experience',
+                    icon: 'book-open-check',
+                    high: 'Creative, insightful, and curious. Likely to embrace new procedures and adapt to diverse patient needs.',
+                    mid: 'Balanced in approach, willing to consider new ideas but values proven methods.',
+                    low: 'Practical, traditional, and resistant to major changes in routine or environment.'
+                },
+                'C': {
+                    name: 'Conscientiousness',
+                    icon: 'clipboard-list',
+                    high: 'Organized, dependable, and disciplined. Ensures all charting and patient care duties are performed accurately and on time.',
+                    mid: 'Generally reliable, but may need reminders to maintain high organizational standards during high stress.',
+                    low: 'Spontaneous and flexible, but may struggle with strict scheduling, documentation, and attention to detail.'
+                },
+                'E': {
+                    name: 'Extraversion',
+                    icon: 'users',
+                    high: 'Outgoing, energetic, and assertive. Thrives in social interaction with patients, families, and staff.',
+                    mid: 'Comfortable with social interaction, enjoys teamwork, but also values periods of quiet focus.',
+                    low: 'Reserved and quiet. Prefers working independently or one-on-one and may be drained by excessive social demands.'
+                },
+                'A': {
+                    name: 'Agreeableness',
+                    icon: 'heart-handshake',
+                    high: 'Compassionate, kind, and cooperative. Excellent at resolving conflicts and providing empathetic care.',
+                    mid: 'Generally friendly and helpful, valuing cooperation, but capable of firm boundaries when needed.',
+                    low: 'Challenging, competitive, and skeptical. More focused on fairness and directness than emotional harmony.'
+                },
+                'N': {
+                    name: 'Neuroticism (Emotional Stability)',
+                    icon: 'shield-alert',
+                    // Note: Higher score here means MORE Neuroticism/LESS Stability
+                    high: 'Calm, resilient, and emotionally stable (High stability is a LOW Neuroticism score). Handles stress and emergencies effectively without becoming overwhelmed.',
+                    mid: 'Experiences occasional stress and worry but is typically able to recover and maintain composure.',
+                    low: 'Prone to anxiety, worry, and emotional reactivity (Low stability is a HIGH Neuroticism score). May find high-stress shifts difficult to manage.'
+                }
+            };
+
+            const data = descriptions[factor];
+            const result = { ...data };
+
+            if (score >= 70) {
+                result.summary = data.high;
+                result.color = 'bg-blue-500';
+            } else if (score >= 30) {
+                result.summary = data.mid;
+                result.color = 'bg-yellow-500';
+            } else {
+                result.summary = data.low;
+                result.color = 'bg-red-500';
+            }
+
+            // Special case for N (Neuroticism):
+            // The score is the standard Neuroticism score (0-100).
+            // A low score (e.g., 20) means high emotional stability, which is good.
+            // A high score (e.g., 80) means low emotional stability, which is concerning.
+            if (factor === 'N') {
+                 if (score <= 30) { // Low Neuroticism = High Stability (GOOD)
+                    result.summary = data.high;
+                    result.color = 'bg-green-600';
+                } else if (score <= 70) {
+                    result.summary = data.mid;
+                    result.color = 'bg-yellow-500';
+                } else { // High Neuroticism = Low Stability (CONCERN)
+                    result.summary = data.low;
+                    result.color = 'bg-red-600';
+                }
+            }
+
+            return result;
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('results-container');
+            const formContainer = document.getElementById('quiz-container');
+            const scoresDiv = container.querySelector('.space-y-6');
+
+            scoresDiv.innerHTML = ''; // Clear previous results
+            formContainer.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            const factorOrder = ['C', 'A', 'E', 'O', 'N']; // Conscientiousness and Agreeableness often prioritized
+            factorOrder.forEach(factor => {
+                const score = results[factor];
+                const data = getFactorDescription(factor, score);
+                const scoreComponent = document.createElement('div');
+                scoreComponent.className = 'bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100';
+
+                scoreComponent.innerHTML = `
+                    <div class="flex items-center space-x-4 mb-3">
+                        ${lucide.icons[data.icon].toSvg({ class: 'w-8 h-8 text-blue-600' })}
+                        <h3 class="text-xl font-bold text-gray-800">${data.name} (${factor})</h3>
+                        <span class="ml-auto text-3xl font-extrabold ${factor === 'N' ? 'text-red-600' : 'text-green-600'}">
+                            ${score}%
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div class="score-bar h-2.5 rounded-full ${data.color}" style="width: ${score}%;"></div>
+                    </div>
+
+                    <p class="text-gray-700 text-sm italic">${data.summary}</p>
+                `;
+                scoresDiv.appendChild(scoreComponent);
+            });
+            // Re-render icons after adding new HTML
+            lucide.createIcons();
+        }
+
+        // --- Data Storage (Firestore) ---
+
+        async function saveResultsToFirestore(results) {
+            if (!isAuthReady || !db || !userId) {
+                console.error("Firestore not ready or user not authenticated.");
+                document.getElementById('save-status').textContent = "Warning: Could not save results. Firestore service not initialized.";
+                return;
+            }
+
+            const saveStatusEl = document.getElementById('save-status');
+            saveStatusEl.textContent = "Saving results...";
+
+            try {
+                // Public Collection path structure for shared data:
+                const path = `/artifacts/${appId}/public/data/cna_quizzes`;
+                const resultsRef = collection(db, path);
+
+                const dataToSave = {
+                    userId: userId,
+                    timestamp: Timestamp.now(),
+                    ...results, // Spread the O, C, E, A, N scores
+                    assessmentName: "CNA_Big5",
+                };
+
+                const docRef = await addDoc(resultsRef, dataToSave);
+                saveStatusEl.textContent = `✅ Results saved successfully! Document ID: ${docRef.id}`;
+                saveStatusEl.classList.add('text-green-600');
+                saveStatusEl.classList.remove('text-gray-600');
+
+                console.log("Document successfully written with ID: ", docRef.id);
+
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                saveStatusEl.textContent = `❌ Error saving results: ${e.message}`;
+                saveStatusEl.classList.add('text-red-600');
+                saveStatusEl.classList.remove('text-gray-600');
+            }
+        }
+
+        // --- Data Retrieval and Aggregation Logic ---
+
+        async function fetchAndLogAllResults() {
+            if (!isAuthReady || !db) {
+                console.error("Firestore not ready. Cannot fetch data.");
+                alert("Firestore not ready. Please try again in a moment.");
+                return;
+            }
+
+            console.log("--- Starting Data Retrieval from Firestore ---");
+            const path = `/artifacts/${appId}/public/data/cna_quizzes`;
+            const resultsRef = collection(db, path);
+            const allResults = [];
+
+            try {
+                const querySnapshot = await getDocs(resultsRef);
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Structure the document data with its ID
+                    allResults.push({
+                        id: doc.id,
+                        ...data,
+                        // Convert Firestore Timestamp to readable format
+                        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : 'N/A'
+                    });
+                });
+
+                console.log(`✅ Successfully retrieved ${allResults.length} assessment results.`);
+                console.table(allResults);
+
+                // Example Aggregation: Calculate Averages
+                if (allResults.length > 0) {
+                    const factors = ['O', 'C', 'E', 'A', 'N'];
+                    const aggregation = factors.reduce((acc, factor) => {
+                        acc[factor] = { sum: 0, count: 0 };
+                        return acc;
+                    }, {});
+
+                    allResults.forEach(result => {
+                        factors.forEach(factor => {
+                            if (typeof result[factor] === 'number') {
+                                aggregation[factor].sum += result[factor];
+                                aggregation[factor].count++;
+                            }
+                        });
+                    });
+
+                    const averages = {};
+                    factors.forEach(factor => {
+                        const { sum, count } = aggregation[factor];
+                        averages[factor] = count > 0 ? (sum / count).toFixed(2) : 'N/A';
+                    });
+
+                    console.log("\n--- Aggregated Averages (All Submissions) ---");
+                    console.log(averages);
+                }
+
+                return allResults;
+
+            } catch (e) {
+                console.error("Error fetching documents: ", e);
+                return null;
+            }
+        }
+
+        // Expose the function globally for easy console debugging (in a real app, this would be secured)
+        window.fetchAndLogAllResults = fetchAndLogAllResults;
+
+
+        // --- Event Listener ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
+            renderQuiz();
+
+            const form = document.getElementById('big5-form');
+            const submitButton = document.getElementById('submit-button');
+            const statusMessage = document.getElementById('status-message');
+            const fetchDataButton = document.getElementById('fetch-data-button');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                statusMessage.classList.add('hidden');
+
+                const formData = new FormData(form);
+
+                // Check if all questions are answered
+                let allAnswered = true;
+                quizItems.forEach(item => {
+                    if (!formData.get(item.id)) {
+                        allAnswered = false;
+                    }
+                });
+
+                if (!allAnswered) {
+                    statusMessage.textContent = "Please answer all questions before submitting.";
+                    statusMessage.classList.remove('hidden');
+                    return;
+                }
+
+                submitButton.disabled = true;
+                submitButton.textContent = "Calculating...";
+
+                const results = calculateScores(formData);
+
+                // 1. Render results on screen
+                renderResults(results);
+
+                // 2. Save results to Firestore
+                await saveResultsToFirestore(results);
+
+                submitButton.disabled = false;
+                submitButton.textContent = "Assessment Submitted!";
+            });
+
+            // Event listener for the new fetch button
+            if (fetchDataButton) {
+                fetchDataButton.addEventListener('click', () => {
+                    fetchDataButton.textContent = 'Fetching...';
+                    fetchAndLogAllResults().finally(() => {
+                        fetchDataButton.textContent = 'Fetch All Results (Console Log)';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
